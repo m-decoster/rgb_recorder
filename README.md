@@ -15,6 +15,15 @@ These instructions are available [here](https://github.com/airo-ugent/airo-mono/
 
 ## Usage
 
+Using the graphical user interface:
+
+```bash
+python -m rgbd_recorder.ui
+```
+
+Any entries you make in the fields will be stored in a `config.ini` file in the current working directory, to save
+you time when you run the application again.
+
 Using the CLI:
 
 ```bash
@@ -37,6 +46,7 @@ The resolution is optional and defaults to `1280 720`. Valid values are:
 - `1920 1080`
 - `1280 720`
 - `672 376`
+
 Not all combinations of FPS and resolution are supported. See the [Zed documentation](https://www.stereolabs.com/docs/video/camera-controls/) for more information.
 
 For example, to record 2 seconds of data from 2 cameras at 1080p@30fps with performance depth mode:
