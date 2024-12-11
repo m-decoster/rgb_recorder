@@ -67,7 +67,6 @@ if __name__ == '__main__':
     tk.Label(app, text="Output Directory:").grid(row=1, column=0, sticky=tk.W)
     output_dir_entry = tk.Entry(app, width=50)
     output_dir_entry.grid(row=1, column=1)
-    output_dir_entry.insert(0, "output")
 
     tk.Label(app, text="Duration (seconds):").grid(row=2, column=0, sticky=tk.W)
     duration_entry = tk.Entry(app, width=50)
@@ -81,7 +80,6 @@ if __name__ == '__main__':
     tk.Label(app, text="FPS:").grid(row=4, column=0, sticky=tk.W)
     fps_entry = tk.Entry(app, width=50)
     fps_entry.grid(row=4, column=1)
-    output_dir_entry.insert(0, "60")
 
     tk.Label(app, text="Resolution (width height):").grid(row=5, column=0, sticky=tk.W)
     resolution_var = tk.StringVar(value="1280 720")
