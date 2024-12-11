@@ -5,6 +5,7 @@ from typing import List
 
 from airo_camera_toolkit.cameras.multiprocess.multiprocess_rgbd_camera import MultiprocessRGBDPublisher
 from airo_camera_toolkit.cameras.zed.zed import Zed
+from pyzed import sl
 
 from rgbd_recorder.video_recorder import MultiprocessVideoRecorder
 
@@ -19,13 +20,13 @@ def create_output_directory(output_dir: str) -> str:
     return video_path
 
 
-def record_videos(serial_numbers: List[str], duration: float, output_dir: str):
+def record_videos(serial_numbers: List[str], duration: float, output_dir: str, depth_mode: sl.DEPTH_MODE, fps: int, resolution: tuple[int, int]) -> None:
     # Initialize the camera publishers.
     publishers = []
     for serial_number in serial_numbers:
-        publisher = MultiprocessRGBDPublisher(Zed, camera_kwargs=dict(resolution=Zed.RESOLUTION_720,
-                                                                      serial_number=serial_number, fps=60,
-                                                                      depth_mode=Zed.ULTRA_DEPTH_MODE),
+        publisher = MultiprocessRGBDPublisher(Zed, camera_kwargs=dict(resolution=resolution,
+                                                                      serial_number=serial_number, fps=fps,
+                                                                      depth_mode=depth_mode),
                                               shared_memory_namespace=serial_number)
         publishers.append(publisher)
 
