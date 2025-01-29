@@ -38,7 +38,7 @@ def record_videos(serial_numbers: List[str], output_dir: str, fps: int,
     video_path = create_output_directory(output_dir)
 
     # Barrier to synchronize recording start.
-    barrier = Barrier(len(serial_numbers))
+    barrier = Barrier(len(serial_numbers) + 1)  # One per camera, plus one for this process.
 
     # Initialize the camera subscribers (video recorders).
     recorders = []
@@ -53,10 +53,18 @@ def record_videos(serial_numbers: List[str], output_dir: str, fps: int,
         recorder.start()
 
     do_stop = False
+    started = False
     while not do_stop:
-        response = input("Enter 'stop' to stop recording: ")
-        if response == "stop":
-            do_stop = True
+        if not started:
+            response = input("Enter 'start' to start recording: ")
+            if response == "start":
+                started = True
+                # Release the barrier to start recording (assuming all recorders are ready).
+                barrier.wait()
+        else:
+            response = input("Enter 'stop' to stop recording: ")
+            if response == "stop":
+                do_stop = True
 
     # Wait for all recorders to finish.
     for recorder in recorders:
