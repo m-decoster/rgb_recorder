@@ -15,6 +15,15 @@ These instructions are available [here](https://github.com/airo-ugent/airo-mono/
 
 ## Usage
 
+Using the graphical user interface:
+
+```bash
+python -m rgbd_recorder.ui
+```
+
+Any entries you make in the fields will be stored in a `config.ini` file in the current working directory, to save
+you time when you run the application again.
+
 Using the CLI:
 
 ```bash
