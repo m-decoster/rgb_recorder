@@ -1,11 +1,8 @@
+import configparser
 import multiprocessing
-import subprocess
-import threading
-import time
 import tkinter as tk
 from multiprocessing import Barrier
 from tkinter import messagebox
-import configparser
 
 from rgbd_recorder.record import create_publishers, start_publishers, create_output_directory, create_recorders, \
     start_recorders, shutdown_publishers, shutdown_recorders
@@ -13,12 +10,14 @@ from rgbd_recorder.record import create_publishers, start_publishers, create_out
 config = configparser.ConfigParser()
 config_file = 'config.ini'
 
+
 def load_config():
     if config.read(config_file):
         serial_numbers_entry.insert(0, config.get('Settings', 'serial_numbers', fallback=''))
         output_dir_entry.insert(0, config.get('Settings', 'output_dir', fallback='output'))
         fps_entry.insert(0, config.get('Settings', 'fps', fallback='60'))
         resolution_var.set(config.get('Settings', 'resolution', fallback='1280 720'))
+
 
 def save_config():
     config['Settings'] = {
@@ -30,11 +29,13 @@ def save_config():
     with open(config_file, 'w') as configfile:
         config.write(configfile)
 
+
 publishers = []
 recorders = []
 start_button = None
 stop_button = None
 status_label = None
+
 
 def start():
     global publishers
@@ -70,6 +71,7 @@ def start():
     # Set status label
     status_label.config(text="Recording... Do not close this window. Press 'Stop' to save recording.")
 
+
 def stop():
     global recorders
     global publishers
@@ -86,6 +88,7 @@ def stop():
 
     # Clear status label
     status_label.config(text="")
+
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
