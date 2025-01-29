@@ -186,8 +186,6 @@ class ZedPublisher(multiprocessing.context.SpawnProcess):
                     time.sleep(0.00001)
                 self.write_lock_shm_array[0] = True
 
-                logger.info(f"{image_left.mean()}, {image_right.mean()}")
-
                 self.rgb_left_shm_array[:] = image_left[:]
                 self.rgb_right_shm_array[:] = image_right[:]
                 self.timestamp_shm_array[0] = time.time()

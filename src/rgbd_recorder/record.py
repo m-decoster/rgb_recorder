@@ -20,7 +20,7 @@ def create_output_directory(output_dir: str) -> str:
     return video_path
 
 
-def record_videos(serial_numbers: List[str], duration: float, output_dir: str, fps: int,
+def record_videos(serial_numbers: List[str], output_dir: str, fps: int,
                   resolution: tuple[int, int]) -> None:
     # Initialize the camera publishers.
     publishers = []
@@ -43,7 +43,7 @@ def record_videos(serial_numbers: List[str], duration: float, output_dir: str, f
     # Initialize the camera subscribers (video recorders).
     recorders = []
     for serial_number in serial_numbers:
-        recorder = MultiprocessVideoRecorder(serial_number, duration,
+        recorder = MultiprocessVideoRecorder(serial_number,
                                              video_path.replace("color.mp4", f"{serial_number}/color.mp4"),
                                              multi_recorder_barrier=barrier)
         recorders.append(recorder)
@@ -52,7 +52,15 @@ def record_videos(serial_numbers: List[str], duration: float, output_dir: str, f
     for recorder in recorders:
         recorder.start()
 
+    do_stop = False
+    while not do_stop:
+        response = input("Enter 'stop' to stop recording: ")
+        if response == "stop":
+            do_stop = True
+
     # Wait for all recorders to finish.
+    for recorder in recorders:
+        recorder.shutdown_event.set()
     for recorder in recorders:
         recorder.join()
 

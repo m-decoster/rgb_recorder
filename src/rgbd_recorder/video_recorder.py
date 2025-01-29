@@ -16,7 +16,6 @@ class MultiprocessVideoRecorder(Process):
     def __init__(
             self,
             shared_memory_namespace: str,
-            duration_seconds: float,
             video_path: str,
             fill_missing_frames: bool = True,
             multi_recorder_barrier: Optional[multiprocessing.Barrier] = None,
@@ -25,7 +24,6 @@ class MultiprocessVideoRecorder(Process):
         self._shared_memory_namespace = shared_memory_namespace
         self.shutdown_event = multiprocessing.Event()
         self.fill_missing_frames = fill_missing_frames
-        self.duration = duration_seconds
         self._multi_recorder_barrier = multi_recorder_barrier
 
         self._video_path_left = video_path.replace(".mp4", "_left.mp4")
@@ -60,7 +58,6 @@ class MultiprocessVideoRecorder(Process):
         video_writer_right.write(cv2.cvtColor(image_previous_right, cv2.COLOR_RGB2BGR))
         n_consecutive_frames_dropped = 0
 
-        start_time = time.time()
         while not self.shutdown_event.is_set():
             timestamp_receiver = receiver.get_current_timestamp()
 
@@ -94,9 +91,6 @@ class MultiprocessVideoRecorder(Process):
 
             video_writer_left.write(image_left)
             video_writer_right.write(image_right)
-
-            if time.time() - start_time > self.duration:
-                break
 
         logger.info("Video recorder has detected shutdown event. Releasing video_writer_[left,right].")
         video_writer_left.release()
