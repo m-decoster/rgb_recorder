@@ -2,11 +2,11 @@ import setuptools
 from setuptools import find_packages
 
 setuptools.setup(
-    name="rgbd_recorder",
+    name="rgb_recorder",
     version="0.0.1",
     author="Mathieu De Coster",
     author_email="mathieu.decoster@ugent.be",
-    description="Record RGB and depth streams with airo-mono",
+    description="Record RGB streams with airo-mono",
     install_requires=[
         "numpy<=2.0",
         "opencv-contrib-python==4.8.1.78",

@@ -7,7 +7,7 @@ from typing import Optional
 import cv2
 from loguru import logger
 
-from rgbd_recorder.zed_multiprocessing import ZedReceiver
+from rgb_recorder.recording.zed_multiprocessing import ZedReceiver
 
 
 class MultiprocessVideoRecorder(Process):

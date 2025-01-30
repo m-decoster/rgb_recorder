@@ -6,8 +6,8 @@ from typing import List
 from airo_camera_toolkit.cameras.zed.zed import Zed
 from pyzed import sl
 
-from rgbd_recorder.video_recorder import MultiprocessVideoRecorder
-from rgbd_recorder.zed_multiprocessing import ZedPublisher
+from rgb_recorder.recording.video_recorder import MultiprocessVideoRecorder
+from rgb_recorder.recording.zed_multiprocessing import ZedPublisher
 
 
 def create_output_directory(output_dir: str) -> str:

@@ -1,7 +1,7 @@
 import argparse
 import multiprocessing
 
-from rgbd_recorder.record import record_videos
+from rgb_recorder.recording.record import record_videos
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

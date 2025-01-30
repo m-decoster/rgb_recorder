@@ -18,7 +18,7 @@ These instructions are available [here](https://github.com/airo-ugent/airo-mono/
 Using the graphical user interface:
 
 ```bash
-python -m rgbd_recorder.ui
+python -m rgb_recorder.recording.ui
 ```
 
 Any entries you make in the fields will be stored in a `config.ini` file in the current working directory, to save
@@ -27,7 +27,7 @@ you time when you run the application again.
 Using the CLI:
 
 ```bash
-python -m rgbd_recorder.cli --serial-numbers $SERIAL_NUMBERS [-o $OUTPUT_DIR] [--fps $FPS] [--resolution $RESOLUTION]
+python -m rgb_recorder.recording.cli --serial-numbers $SERIAL_NUMBERS [-o $OUTPUT_DIR] [--fps $FPS] [--resolution $RESOLUTION]
 ```
 
 Pass the serial numbers of your connected Zed cameras as a list of strings.
@@ -46,7 +46,7 @@ Not all combinations of FPS and resolution are supported. See the [Zed documenta
 For example, to record data from 2 cameras at 1080p@30fps:
 
 ```bash
-python -m rgbd_recorder.cli --serial-numbers 35357320 34670760 --resolution 1920 1080 --fps 30
+python -m rgb_recorder.recording.cli --serial-numbers 35357320 34670760 --resolution 1920 1080 --fps 30
 ```
 
 When all publishers and recorders have been created, the program will query you to enter "start" in the terminal.
@@ -64,10 +64,16 @@ This package supports stereo camera extrinsics calibration. To perform calibrati
   - 31mm marker size
   - ArUcO DICT_4x4_250 dictionary
 
-You can use the script `stereo_calibration.py` to calibrate the cameras. This script will guide you through the calibration process.
+You can use the `calibration` package to calibrate the cameras. This script will guide you through the calibration process.
 
 ```bash
-python -m rgbd_recorder.stereo_calibration --serial-numbers $SERIAL_NUMBERS --output $OUTPUT_DIRECTORY
+python -m rgb_recorder.calibration.cli --serial-numbers $SERIAL_NUMBERS --output $OUTPUT_DIRECTORY
+```
+
+A user interface is also provided:
+
+```bash
+python -m rgb_recorder.calibration.ui
 ```
 
 To perform calibration, take your ChArUcO board and move it around in front of the cameras.

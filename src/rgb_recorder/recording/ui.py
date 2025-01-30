@@ -4,11 +4,11 @@ import tkinter as tk
 from multiprocessing import Barrier
 from tkinter import messagebox
 
-from rgbd_recorder.record import create_publishers, start_publishers, create_output_directory, create_recorders, \
+from rgb_recorder.recording.record import create_publishers, start_publishers, create_output_directory, create_recorders, \
     start_recorders, shutdown_publishers, shutdown_recorders
 
 config = configparser.ConfigParser()
-config_file = 'config.ini'
+config_file = '../config.ini'
 
 
 def load_config():
@@ -88,6 +88,8 @@ def stop():
 
     # Clear status label
     status_label.config(text="")
+
+    save_config()
 
 
 if __name__ == '__main__':

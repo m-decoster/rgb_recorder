@@ -15,22 +15,45 @@ from airo_dataset_tools.data_parsers.pose import Pose
 from loguru import logger
 
 
-def main(args):
+def calibrate(args):
     serial_number_1 = args.serial_number_1
     serial_number_2 = args.serial_number_2
 
+    camera_1, camera_2 = open_cameras(serial_number_1, serial_number_2)
+    X_C1_C2 = compute_calibration(camera_1, camera_2)
+
+    output_dir = args.output_dir
+    save_calibration_output(X_C1_C2, camera_1, camera_2, output_dir)
+
+
+def save_calibration_output(X_C1_C2, camera_1, camera_2, output_dir):
+    output_dir = os.path.join(output_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}")
+    os.makedirs(output_dir)
+    output_file = os.path.join(output_dir,
+                               "camera_{0}_to_camera_{1}.json".format(camera_2.serial_number, camera_1.serial_number))
+    with open(output_file, "w") as f:
+        json.dump(Pose.from_homogeneous_matrix(X_C1_C2).model_dump(), f, indent=4)
+    logger.info(f"Wrote calibration data to {output_file}.")
+    # Save also the intrinsics, and the extrinsics of individual cameras' sensors.
+    save_camera_intrinsics(camera_1, output_dir)
+    save_camera_pose_right_in_left_view(camera_1, output_dir)
+    save_camera_intrinsics(camera_2, output_dir)
+    save_camera_pose_right_in_left_view(camera_2, output_dir)
+
+
+def open_cameras(serial_number_1, serial_number_2):
     camera_1 = Zed(serial_number=serial_number_1)
     camera_2 = Zed(serial_number=serial_number_2)
+    return camera_1, camera_2
 
+
+def compute_calibration(camera_1, camera_2):
     camera_frames_1 = []
     camera_frames_2 = []
-
     # Capture multiple images from both cameras.
     cv2.namedWindow("frame1", cv2.WINDOW_NORMAL)
     cv2.namedWindow("frame2", cv2.WINDOW_NORMAL)
-
     logger.info("Press [s] to save a sample, [q] to quit.")
-
     MIN_NUM_SAMPLES = 3
     num_samples = 0
     while True:
@@ -52,15 +75,12 @@ def main(args):
             logger.info(f"Collected {num_samples} (minimum: {MIN_NUM_SAMPLES}) samples.")
         if key == ord('q'):
             break
-
     if num_samples < MIN_NUM_SAMPLES:
         logger.error(f"Not enough samples collected. Need at least {MIN_NUM_SAMPLES} Exiting...")
         sys.exit(1)
-
     object_points = []
     image_points_1 = []
     image_points_2 = []
-
     logger.info("Showing collected samples... Press any key to advance to the next image.")
     for frame1, frame2 in zip(camera_frames_1, camera_frames_2):
         aruco_f1 = detect_aruco_markers(frame1, AIRO_DEFAULT_ARUCO_DICT)
@@ -103,46 +123,26 @@ def main(args):
         image_points_2.append(imagep_2)
 
         cv2.waitKey(0)
-
     camera_matrix_1 = camera_1.intrinsics_matrix()
     camera_matrix_2 = camera_2.intrinsics_matrix()
-
     width, height = camera_1.resolution
-
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.0001)
-
     print("Obj points")
     print(object_points)
     print("Image points 1")
     print(image_points_1)
     print("Image points 2")
     print(image_points_2)
-
     rmse, _, _, _, _, R_C1_C2, T_C1_C2, _, _ = cv2.stereoCalibrate(object_points, image_points_1, image_points_2,
                                                                    camera_matrix_1, None,
                                                                    camera_matrix_2, None, (width, height),
                                                                    criteria=criteria,
                                                                    flags=cv2.CALIB_FIX_INTRINSIC)
-
     logger.info(f"Calibration output:\nRMSE={rmse}\nR_C1_C2={R_C1_C2}\nT_C1_C2={T_C1_C2}")
-
     X_C1_C2 = np.eye(4)
     X_C1_C2[:3, :3] = R_C1_C2
     X_C1_C2[:3, 3] = T_C1_C2.squeeze()
-
-    output_dir = args.output_dir + f"_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-    os.makedirs(output_dir)
-    output_file = os.path.join(output_dir,
-                               "camera_{0}_to_camera_{1}.json".format(camera_2.serial_number, camera_1.serial_number))
-    with open(output_file, "w") as f:
-        json.dump(Pose.from_homogeneous_matrix(X_C1_C2).model_dump(), f, indent=4)
-    logger.info(f"Wrote calibration data to {output_file}.")
-
-    # Save also the intrinsics, and the extrinsics of individual cameras' sensors.
-    save_camera_intrinsics(camera_1, output_dir)
-    save_camera_pose_right_in_left_view(camera_1, output_dir)
-    save_camera_intrinsics(camera_2, output_dir)
-    save_camera_pose_right_in_left_view(camera_2, output_dir)
+    return X_C1_C2
 
 
 def save_camera_pose_right_in_left_view(camera_1, output_dir):
@@ -158,15 +158,3 @@ def save_camera_intrinsics(camera_1, output_dir):
     camera_intrinsics = CameraIntrinsics.from_matrix_and_resolution(intrinsics, resolution)
     with open(intrinsics_file, "w") as f:
         json.dump(camera_intrinsics.model_dump(exclude_none=True), f, indent=4)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("serial_number_1", type=str, help="Serial number of the first camera.")
-    parser.add_argument("serial_number_2", type=str, help="Serial number of the second camera.")
-    parser.add_argument("-o", "--output-dir", type=str, default="calibration_data", help="Output directory.")
-
-    args = parser.parse_args()
-
-    main(args)
