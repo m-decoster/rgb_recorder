@@ -52,3 +52,35 @@ python -m rgbd_recorder.cli --serial-numbers 35357320 34670760 --resolution 1920
 When all publishers and recorders have been created, the program will query you to enter "start" in the terminal.
 This starts the recording. To stop the recording, enter "stop" in the terminal.
 This will stop the recording and save the data to the output directory.
+
+## Camera calibration
+
+This package supports external stereo camera calibration. To perform calibration, you need:
+
+- The serial numbers of two of the cameras
+- [A ChArUcO board with the following dimensions](https://github.com/airo-ugent/airo-mono/blob/main/airo-camera-toolkit/docs/calib.io_charuco_300x220_5x7_40_31_DICT_4X4.pdf):
+  - 5x7 squares
+  - 40mm square size
+  - 31mm marker size
+  - ArUcO DICT_4x4_250 dictionary
+
+You can use the script `stereo_calibration.py` to calibrate the cameras. This script will guide you through the calibration process.
+
+```bash
+python -m rgbd_recorder.stereo_calibration --serial-numbers $SERIAL_NUMBERS --output $OUTPUT_DIRECTORY
+```
+
+To perform calibration, take your ChArUcO board and move it around in front of the cameras.
+When you have a steady pose where the board is properly visible in both cameras, press `s` to capture the image.
+When you have captured enough images, press `q` to stop collecting data.
+The script will then show the detected ArUcO corners on both images and collect the necessary data to perform calibration.
+Press any key to loop through the images.
+The script will then calibrate the cameras and save the calibration data to the output directory, while also logging it to the terminal.
+The calibration data is expressed as the transformation matrix from one camera to another. The frame of the Zed camera
+is defined as described [here](https://www.stereolabs.com/docs/positional-tracking/coordinate-frames#selecting-a-coordinate-system)
+and shown in this image (source: above link).  
+![zed_frame.png](https://docs.stereolabs.com/positional-tracking/images/zed_right_handed.jpg)
+
+
+You should consider one camera to be the world origin. Then, if you have more than two cameras, make sure to perform the calibration for
+as many camera pairs as needed to be able to express all camera frames with respect to the world origin.
