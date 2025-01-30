@@ -1,10 +1,11 @@
+import os
 import tkinter as tk
 from tkinter import messagebox
 import configparser
 from rgb_recorder.calibration.stereo_calibration import open_cameras, compute_calibration, save_calibration_output
 
 config = configparser.ConfigParser()
-config_file = '../config_calibration.ini'
+config_file = os.path.join(os.getcwd(), "rgb_recorder_config_calibration.ini")
 
 def load_config():
     if config.read(config_file):

@@ -1,14 +1,16 @@
 import configparser
 import multiprocessing
+import os
 import tkinter as tk
 from multiprocessing import Barrier
 from tkinter import messagebox
 
-from rgb_recorder.recording.record import create_publishers, start_publishers, create_output_directory, create_recorders, \
+from rgb_recorder.recording.record import create_publishers, start_publishers, create_output_directory, \
+    create_recorders, \
     start_recorders, shutdown_publishers, shutdown_recorders
 
 config = configparser.ConfigParser()
-config_file = '../config.ini'
+config_file = os.path.join(os.getcwd(), "rgb_recorder_config.ini")
 
 
 def load_config():
@@ -106,27 +108,23 @@ if __name__ == '__main__':
     output_dir_entry = tk.Entry(app, width=50)
     output_dir_entry.grid(row=1, column=1)
 
-    tk.Label(app, text="Duration (seconds):").grid(row=2, column=0, sticky=tk.W)
-    duration_entry = tk.Entry(app, width=50)
-    duration_entry.grid(row=2, column=1)
-
-    tk.Label(app, text="FPS:").grid(row=4, column=0, sticky=tk.W)
+    tk.Label(app, text="FPS:").grid(row=3, column=0, sticky=tk.W)
     fps_entry = tk.Entry(app, width=50)
-    fps_entry.grid(row=4, column=1)
+    fps_entry.grid(row=3, column=1)
 
-    tk.Label(app, text="Resolution (width height):").grid(row=5, column=0, sticky=tk.W)
+    tk.Label(app, text="Resolution (width height):").grid(row=4, column=0, sticky=tk.W)
     resolution_var = tk.StringVar(value="1280 720")
     resolution_entry = tk.Entry(app, textvariable=resolution_var, width=50)
-    resolution_entry.grid(row=5, column=1)
+    resolution_entry.grid(row=4, column=1)
 
     start_button = tk.Button(app, text="Start", command=start)
-    start_button.grid(row=6, column=0, columnspan=1)
+    start_button.grid(row=5, column=0, columnspan=1)
     stop_button = tk.Button(app, text="Stop", command=stop)
-    stop_button.grid(row=6, column=1, columnspan=1)
+    stop_button.grid(row=5, column=1, columnspan=1)
     stop_button.config(state=tk.DISABLED)
 
     status_label = tk.Label(app, text="")
-    status_label.grid(row=7, column=0, columnspan=2)
+    status_label.grid(row=6, column=0, columnspan=2)
 
     load_config()
     app.mainloop()
