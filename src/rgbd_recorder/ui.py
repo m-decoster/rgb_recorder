@@ -1,64 +1,100 @@
-import subprocess
-import threading
-import time
-import tkinter as tk
-from tkinter import messagebox
 import configparser
+import multiprocessing
+import tkinter as tk
+from multiprocessing import Barrier
+from tkinter import messagebox
+
+from rgbd_recorder.record import create_publishers, start_publishers, create_output_directory, create_recorders, \
+    start_recorders, shutdown_publishers, shutdown_recorders
 
 config = configparser.ConfigParser()
 config_file = 'config.ini'
+
 
 def load_config():
     if config.read(config_file):
         serial_numbers_entry.insert(0, config.get('Settings', 'serial_numbers', fallback=''))
         output_dir_entry.insert(0, config.get('Settings', 'output_dir', fallback='output'))
-        duration_entry.insert(0, config.get('Settings', 'duration', fallback=''))
-        depth_mode_var.set(config.get('Settings', 'depth_mode', fallback='ULTRA'))
         fps_entry.insert(0, config.get('Settings', 'fps', fallback='60'))
         resolution_var.set(config.get('Settings', 'resolution', fallback='1280 720'))
+
 
 def save_config():
     config['Settings'] = {
         'serial_numbers': serial_numbers_entry.get(),
         'output_dir': output_dir_entry.get(),
-        'duration': duration_entry.get(),
-        'depth_mode': depth_mode_var.get(),
         'fps': fps_entry.get(),
         'resolution': resolution_var.get()
     }
     with open(config_file, 'w') as configfile:
         config.write(configfile)
 
-def run_script():
+
+publishers = []
+recorders = []
+start_button = None
+stop_button = None
+status_label = None
+
+
+def start():
+    global publishers
+    global recorders
+    global start_button
+    global stop_button
+    global status_label
+
     serial_numbers = serial_numbers_entry.get().split()
     output_dir = output_dir_entry.get()
-    duration = float(duration_entry.get())
-    depth_mode = depth_mode_var.get()
-    fps = fps_entry.get()
-    resolution = resolution_var.get()
+    fps = int(fps_entry.get())
+    resolution = tuple(int(x) for x in resolution_var.get().split(' '))
 
-    if not serial_numbers or not duration:
-        messagebox.showerror("Error", "Serial numbers and duration are required.")
+    if not serial_numbers:
+        messagebox.showerror("Error", "Serial numbers are required.")
         return
 
-    command = [
-        "python", "-m", "rgbd_recorder.cli",
-        "--serial-numbers", *serial_numbers,
-        "-o", output_dir,
-        "-d", str(duration),
-        "-m", depth_mode,
-        "--fps", fps,
-        "--resolution", *resolution.split()
-    ]
+    publishers = create_publishers(fps, resolution, serial_numbers)
+    start_publishers(publishers)
 
-    status_label.config(text=f"Recording in progress.")
-    save_config()
-    subprocess.run(command)
-    status_label.config(text=f"Output is saved to: {output_dir}. You can close this window.")
+    video_path = create_output_directory(output_dir)
+
+    # Barrier to synchronize recording start.
+    barrier = Barrier(len(serial_numbers))  # One per camera, plus one for this process.
+
+    recorders = create_recorders(barrier, serial_numbers, video_path)
+    start_recorders(recorders)
+
+    # Disable start_button, enable stop_button
+    start_button.config(state=tk.DISABLED)
+    stop_button.config(state=tk.NORMAL)
+
+    # Set status label
+    status_label.config(text="Recording... Do not close this window. Press 'Stop' to save recording.")
+
+
+def stop():
+    global recorders
+    global publishers
+    global start_button
+    global stop_button
+    global status_label
+
+    shutdown_recorders(recorders)
+    shutdown_publishers(publishers)
+
+    # Enable start_button, disable stop_button
+    start_button.config(state=tk.NORMAL)
+    stop_button.config(state=tk.DISABLED)
+
+    # Clear status label
+    status_label.config(text="")
+
 
 if __name__ == '__main__':
+    multiprocessing.set_start_method('spawn')
+
     app = tk.Tk()
-    app.title("RGBD Recorder")
+    app.title("RGB Recorder")
 
     tk.Label(app, text="Serial Numbers (space-separated):").grid(row=0, column=0, sticky=tk.W)
     serial_numbers_entry = tk.Entry(app, width=50)
@@ -72,11 +108,6 @@ if __name__ == '__main__':
     duration_entry = tk.Entry(app, width=50)
     duration_entry.grid(row=2, column=1)
 
-    tk.Label(app, text="Depth Mode:").grid(row=3, column=0, sticky=tk.W)
-    depth_mode_var = tk.StringVar(value="ULTRA")
-    depth_mode_menu = tk.OptionMenu(app, depth_mode_var, "PERFORMANCE", "QUALITY", "ULTRA", "NEURAL")
-    depth_mode_menu.grid(row=3, column=1, sticky=tk.W)
-
     tk.Label(app, text="FPS:").grid(row=4, column=0, sticky=tk.W)
     fps_entry = tk.Entry(app, width=50)
     fps_entry.grid(row=4, column=1)
@@ -86,7 +117,11 @@ if __name__ == '__main__':
     resolution_entry = tk.Entry(app, textvariable=resolution_var, width=50)
     resolution_entry.grid(row=5, column=1)
 
-    tk.Button(app, text="Run", command=run_script).grid(row=6, column=0, columnspan=2)
+    start_button = tk.Button(app, text="Start", command=start)
+    start_button.grid(row=6, column=0, columnspan=1)
+    stop_button = tk.Button(app, text="Stop", command=stop)
+    stop_button.grid(row=6, column=1, columnspan=1)
+    stop_button.config(state=tk.DISABLED)
 
     status_label = tk.Label(app, text="")
     status_label.grid(row=7, column=0, columnspan=2)
