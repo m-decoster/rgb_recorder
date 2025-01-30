@@ -1,4 +1,4 @@
-# rgbd_recorder
+# rgb_recorder
 
 Record RGB streams from multiple Zed cameras with airo-mono.
 
