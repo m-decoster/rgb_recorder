@@ -55,7 +55,7 @@ This will stop the recording and save the data to the output directory.
 
 ## Camera calibration
 
-This package supports external stereo camera calibration. To perform calibration, you need:
+This package supports stereo camera extrinsics calibration. To perform calibration, you need:
 
 - The serial numbers of two of the cameras
 - [A ChArUcO board with the following dimensions](https://github.com/airo-ugent/airo-mono/blob/main/airo-camera-toolkit/docs/calib.io_charuco_300x220_5x7_40_31_DICT_4X4.pdf):
