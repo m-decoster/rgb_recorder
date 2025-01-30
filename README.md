@@ -1,6 +1,6 @@
 # rgbd_recorder
 
-Record RGB and depth streams from Zed cameras with airo-mono.
+Record RGB streams from multiple Zed cameras with airo-mono.
 
 ## Installation
 
