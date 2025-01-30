@@ -10,9 +10,9 @@ from airo_camera_toolkit.calibration.fiducial_markers import AIRO_DEFAULT_ARUCO_
     AIRO_DEFAULT_CHARUCO_BOARD, detect_aruco_markers, detect_charuco_corners
 from airo_camera_toolkit.cameras.zed.zed import Zed
 from airo_camera_toolkit.utils.image_converter import ImageConverter
+from airo_dataset_tools.data_parsers.camera_intrinsics import CameraIntrinsics
 from airo_dataset_tools.data_parsers.pose import Pose
 from loguru import logger
-from pyzed import sl
 
 
 def main(args):
@@ -86,12 +86,14 @@ def main(args):
         common_ids = np.array(sorted(list(set(charuco_corners_f1.ids.squeeze().tolist()).intersection(
             set(charuco_corners_f2.ids.squeeze().tolist())))))
         common_corners_1 = np.stack([charuco_corners_f1.corners[i] for i in range(len(charuco_corners_f1.ids)) if
-                                        charuco_corners_f1.ids[i, 0] in common_ids])
+                                     charuco_corners_f1.ids[i, 0] in common_ids])
         common_corners_2 = np.stack([charuco_corners_f2.corners[i] for i in range(len(charuco_corners_f2.ids)) if
-                                        charuco_corners_f2.ids[i, 0] in common_ids])
+                                     charuco_corners_f2.ids[i, 0] in common_ids])
 
-        obj_points, imagep_1 = cv2.aruco.getBoardObjectAndImagePoints(AIRO_DEFAULT_CHARUCO_BOARD, common_corners_1, common_ids)
-        _obj_points, imagep_2 = cv2.aruco.getBoardObjectAndImagePoints(AIRO_DEFAULT_CHARUCO_BOARD, common_corners_2, common_ids)
+        obj_points, imagep_1 = cv2.aruco.getBoardObjectAndImagePoints(AIRO_DEFAULT_CHARUCO_BOARD, common_corners_1,
+                                                                      common_ids)
+        _obj_points, imagep_2 = cv2.aruco.getBoardObjectAndImagePoints(AIRO_DEFAULT_CHARUCO_BOARD, common_corners_2,
+                                                                       common_ids)
 
         object_points.append(obj_points)
         image_points_1.append(imagep_1)
@@ -132,6 +134,27 @@ def main(args):
     with open(output_file, "w") as f:
         json.dump(Pose.from_homogeneous_matrix(X_C1_C2).model_dump(), f, indent=4)
     logger.info(f"Wrote calibration data to {output_file}.")
+
+    # Save also the intrinsics, and the extrinsics of individual cameras' sensors.
+    save_camera_intrinsics(camera_1, output_dir)
+    save_camera_pose_right_in_left_view(camera_1, output_dir)
+    save_camera_intrinsics(camera_2, output_dir)
+    save_camera_pose_right_in_left_view(camera_2, output_dir)
+
+
+def save_camera_pose_right_in_left_view(camera_1, output_dir):
+    camera_1_right_in_left_file = os.path.join(output_dir, f"pose_right_in_left_view_{camera_1.serial_number}.json")
+    with open(camera_1_right_in_left_file, "w") as f:
+        json.dump(Pose.from_homogeneous_matrix(camera_1.pose_of_right_view_in_left_view).model_dump(), f, indent=4)
+
+
+def save_camera_intrinsics(camera_1, output_dir):
+    intrinsics_file = os.path.join(output_dir, f"intrinsics_{camera_1.serial_number}.json")
+    resolution = camera_1.resolution
+    intrinsics = camera_1.intrinsics_matrix()
+    camera_intrinsics = CameraIntrinsics.from_matrix_and_resolution(intrinsics, resolution)
+    with open(intrinsics_file, "w") as f:
+        json.dump(camera_intrinsics.model_dump(exclude_none=True), f, indent=4)
 
 
 if __name__ == '__main__':

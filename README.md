@@ -81,6 +81,12 @@ is defined as described [here](https://www.stereolabs.com/docs/positional-tracki
 and shown in this image (source: above link).  
 ![zed_frame.png](https://docs.stereolabs.com/positional-tracking/images/zed_right_handed.jpg)
 
+Per calibration run, the following information is written to disk:
+- The transformation matrix from camera 1 to camera 2
+- The intrinsics of camera 1
+- The intrinsics of camera 2
+- The pose of camera 1's right view with respect to the left view
+- The pose of camera 2's right view with respect to the left view
 
 You should consider one camera to be the world origin. Then, if you have more than two cameras, make sure to perform the calibration for
 as many camera pairs as needed to be able to express all camera frames with respect to the world origin.
