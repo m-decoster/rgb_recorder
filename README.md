@@ -35,8 +35,7 @@ There will be four output files per connected camera:
 
 ### Legacy
 
-**The below instructions refer to an older version of the package, which works fine under Ubuntu but not under Windows.
-**
+**The below instructions refer to an older version of the package, which works fine under Ubuntu but not under Windows.**
 
 Using the graphical user interface:
 
