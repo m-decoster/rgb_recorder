@@ -19,7 +19,7 @@ available [here](https://github.com/airo-ugent/airo-mono/blob/main/airo-camera-t
 All you need to do is run
 
 ```bash
-python -m rgb_recorder.zed_sdk.ui
+python -m rgb_recorder.recording.zed_sdk.ui
 ```
 
 and then click "Start". When you want to stop the recording, click "Stop" and wait until all videos have been exported
