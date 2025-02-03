@@ -95,12 +95,12 @@ def stop():
     global should_stop
     global svo_filenames
 
+    stop_button.config(state=tk.DISABLED)
+
     logger.info("Stop button clicked. Stopping all camera recordings...")
     should_stop = True
 
-    # Enable start_button, disable stop_button
     start_button.config(state=tk.NORMAL)
-    stop_button.config(state=tk.DISABLED)
 
     logger.info("Exporting video data...")
     status_label.config(text="Exporting... Do not close this window.")
