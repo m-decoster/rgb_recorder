@@ -1,9 +1,12 @@
 import configparser
 import multiprocessing
 import os
+import sys
 import tkinter as tk
+import tkinter.scrolledtext as scrolledtext
+
 from datetime import datetime
-from threading import Thread, Barrier
+from threading import Thread, Barrier, Event
 from tkinter import messagebox
 
 from loguru import logger
@@ -33,13 +36,13 @@ def save_config():
 start_button = None
 stop_button = None
 status_label = None
-should_stop = False
+should_stop = Event()
 svo_filenames = []
 
 
 def should_stop_fn() -> bool:
     global should_stop
-    return should_stop
+    return should_stop.is_set()
 
 
 def create_output_file(output_dir: str, serial_number: str, timestamp: str) -> str:
@@ -57,7 +60,7 @@ def start():
     global should_stop
     global svo_filenames
 
-    should_stop = False
+    should_stop.clear()
 
     serial_numbers = serial_numbers_entry.get().split()
     output_dir = output_dir_entry.get()
@@ -98,7 +101,7 @@ def stop():
     stop_button.config(state=tk.DISABLED)
 
     logger.info("Stop button clicked. Stopping all camera recordings...")
-    should_stop = True
+    should_stop.set()
 
     start_button.config(state=tk.NORMAL)
 

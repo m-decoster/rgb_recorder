@@ -17,6 +17,8 @@ class Camera:
 
 def initialize_sdk(camera_serial_number: str) -> sl.InitParameters:
     init = sl.InitParameters()
+    init.camera_resolution = sl.RESOLUTION.HD2K
+    init.camera_fps = 15
     init.set_from_serial_number(int(camera_serial_number))
     # init.depth_mode = sl.DEPTH_MODE.NONE  # Set configuration parameters for the ZED
     return init
