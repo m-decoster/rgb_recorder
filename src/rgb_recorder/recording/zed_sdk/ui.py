@@ -42,8 +42,7 @@ def should_stop_fn() -> bool:
     return should_stop
 
 
-def create_output_file(output_dir: str, serial_number: str) -> str:
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+def create_output_file(output_dir: str, serial_number: str, timestamp: str) -> str:
     video_name = f"{serial_number}.svo2"
     video_dir = os.path.join(output_dir, timestamp)
     os.makedirs(video_dir, exist_ok=True)
@@ -73,8 +72,9 @@ def start():
     logger.info(f"Starting {len(serial_numbers)} recording threads...")
     threads = []
     recording_barrier = Barrier(len(serial_numbers))
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     for serial_number in serial_numbers:
-        video_path = create_output_file(output_dir, serial_number)
+        video_path = create_output_file(output_dir, serial_number, timestamp)
         svo_filenames.append(video_path)
         t = Thread(target=record_video, args=(serial_number, video_path, should_stop_fn, recording_barrier))
         t.start()
