@@ -16,7 +16,6 @@ def create_output_directory(output_dir: str) -> str:
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d/%H-%M-%S")
     video_name = f"{timestamp}/color.mp4"
     video_path = os.path.join(output_dir, video_name)
-    video_path = os.path.abspath(video_path)
     return video_path
 
 
@@ -25,7 +24,7 @@ def record_videos(serial_numbers: List[str], output_dir: str, fps: int,
     publishers = create_publishers(fps, resolution, serial_numbers)
     start_publishers(publishers)
 
-    video_path = create_output_directory(output_dir)
+    video_path = create_output_file(output_dir)
 
     # Barrier to synchronize recording start.
     barrier = Barrier(len(serial_numbers) + 1)  # One per camera, plus one for this process.

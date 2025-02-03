@@ -5,7 +5,7 @@ import tkinter as tk
 from multiprocessing import Barrier
 from tkinter import messagebox
 
-from rgb_recorder.recording.record import create_publishers, start_publishers, create_output_directory, \
+from rgb_recorder.recording.record import create_publishers, start_publishers, create_output_file, \
     create_recorders, \
     start_recorders, shutdown_publishers, shutdown_recorders
 
@@ -58,7 +58,7 @@ def start():
     publishers = create_publishers(fps, resolution, serial_numbers)
     start_publishers(publishers)
 
-    video_path = create_output_directory(output_dir)
+    video_path = create_output_file(output_dir)
 
     # Barrier to synchronize recording start.
     barrier = Barrier(len(serial_numbers))  # One per camera, plus one for this process.
