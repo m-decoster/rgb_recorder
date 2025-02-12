@@ -9,8 +9,9 @@ from loguru import logger
 
 
 class OutputMode(enum.Enum):
-    LEFT_AND_RIGHT_RGB = 0
-    DEPTH = 1
+    RGB_LEFT = 0
+    RGB_RIGHT = 1
+    DEPTH_LEFT = 2
 
 
 def progress_bar(percent_done, bar_length=50):
@@ -57,22 +58,19 @@ def export(input_file: str, output_file: str, output_mode: OutputMode):
     image_size = cam.get_camera_information().camera_configuration.resolution
     width = image_size.width
     height = image_size.height
-    width_sbs = width * 2
     fps = max(cam.get_camera_information().camera_configuration.fps, 25)
 
     # Prepare side by side image container equivalent to CV_8UC4.
-    svo_image_sbs_rgba = np.zeros((height, width_sbs, 4), dtype=np.uint8)
+    svo_image_sbs_rgba = np.zeros((height, width, 4), dtype=np.uint8)
 
     # Prepare single image containers
-    left_image = sl.Mat()
-    right_image = sl.Mat()
-    depth_image = sl.Mat()
+    image = sl.Mat()
 
     # Create video writer with MPEG-4 part 2 codec
     video_writer = cv2.VideoWriter(output_file,
                                    cv2.VideoWriter_fourcc('M', '4', 'S', '2'),
                                    fps,
-                                   (width_sbs, height))
+                                   (width, height))
     if not video_writer.isOpened():
         raise IOError("Could not open video writer for file: " + output_file)
 
@@ -84,30 +82,26 @@ def export(input_file: str, output_file: str, output_mode: OutputMode):
         if err == sl.ERROR_CODE.SUCCESS:
             svo_position = cam.get_svo_position()
 
-            if output_mode == OutputMode.LEFT_AND_RIGHT_RGB:
-                cam.retrieve_image(left_image, sl.VIEW.LEFT)
-                cam.retrieve_image(right_image, sl.VIEW.RIGHT)
-
-                svo_image_sbs_rgba[0:height, 0:width, :] = left_image.get_data()
-                svo_image_sbs_rgba[0:, width:, :] = right_image.get_data()
-                ocv_image_sbs_rgb = cv2.cvtColor(svo_image_sbs_rgba, cv2.COLOR_RGBA2RGB)
-                video_writer.write(ocv_image_sbs_rgb)
+            if output_mode == OutputMode.RGB_LEFT:
+                cam.retrieve_image(image, sl.VIEW.LEFT)
+            elif output_mode == OutputMode.RGB_RIGHT:
+                cam.retrieve_image(image, sl.VIEW.RIGHT)
+            elif output_mode == OutputMode.DEPTH_LEFT:
+                cam.retrieve_image(image, sl.VIEW.DEPTH)
             else:
-                cam.retrieve_image(left_image, sl.VIEW.LEFT)
-                cam.retrieve_image(depth_image, sl.VIEW.DEPTH)
+                raise ValueError(f"Unsupported output mode: {output_mode}")
 
-                svo_image_sbs_rgba[0:height, 0:width, :] = left_image.get_data()
-                svo_image_sbs_rgba[0:, width:, :] = depth_image.get_data()
-                ocv_image_sbs_rgb = cv2.cvtColor(svo_image_sbs_rgba, cv2.COLOR_RGBA2RGB)
-                video_writer.write(ocv_image_sbs_rgb)
+            svo_image_sbs_rgba[0:height, 0:width, :] = image.get_data()
+            ocv_image_sbs_rgb = cv2.cvtColor(svo_image_sbs_rgba, cv2.COLOR_RGBA2RGB)
+            video_writer.write(ocv_image_sbs_rgb)
 
             # Display progress
             progress_bar((svo_position + 1) / nb_frames * 100, 30)
 
-        if err == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
-            progress_bar(100, 30)
-            logger.info("Reached end of file successfully.")
-            break
+            if err == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
+                progress_bar(100, 30)
+                logger.info("Reached end of file successfully.")
+                break
 
     # Close the video writer
     video_writer.release()

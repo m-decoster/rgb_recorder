@@ -27,13 +27,13 @@ def initialize_sdk(camera_serial_number: str) -> sl.InitParameters:
 def open_camera(init: sl.InitParameters, output_filename: str) -> sl.Camera:
     cam = sl.Camera()
     status = cam.open(init)
-    if not status:
-        raise RuntimeError("Could not open camera.")
+    if status != sl.ERROR_CODE.SUCCESS:
+        raise RuntimeError(f"Could not open camera: {status}.")
     recording_param = sl.RecordingParameters(output_filename,
                                              sl.SVO_COMPRESSION_MODE.H264)  # Enable recording with the filename specified in argument
     err = cam.enable_recording(recording_param)
     if err != sl.ERROR_CODE.SUCCESS:
-        raise RuntimeError("Could not enable recording.")
+        raise RuntimeError(f"Could not enable recording: {err}.")
     return cam
 
 

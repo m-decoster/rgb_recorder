@@ -112,10 +112,12 @@ def stop():
         # Get extension.
         _, ext = os.path.splitext(svo_filename)
 
-        logger.info(f"Exporting SVO file {svo_filename} to RGB video...")
-        export(svo_filename, svo_filename.replace(ext, "_rgb.mp4"), OutputMode.LEFT_AND_RIGHT_RGB)
-        logger.info(f"Exporting SVO file {svo_filename} to depth video...")
-        export(svo_filename, svo_filename.replace(ext, "_depth.mp4"), OutputMode.DEPTH)
+        logger.info(f"Exporting SVO file {svo_filename} to RGB videos... (1/2)")
+        export(svo_filename, svo_filename.replace(ext, "_rgb_left.mp4"), OutputMode.RGB_LEFT)
+        logger.info(f"Exporting SVO file {svo_filename} to RGB videos... (2/2)")
+        export(svo_filename, svo_filename.replace(ext, "_rgb_right.mp4"), OutputMode.RGB_RIGHT)
+        logger.info(f"Exporting SVO file {svo_filename} to depth video... (1/1)")
+        export(svo_filename, svo_filename.replace(ext, "_depth.mp4"), OutputMode.DEPTH_LEFT)
 
     logger.info("Ready to record.")
     status_label.config(text="Ready to record.")
