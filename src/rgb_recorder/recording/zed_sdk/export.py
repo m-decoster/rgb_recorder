@@ -98,10 +98,10 @@ def export(input_file: str, output_file: str, output_mode: OutputMode):
             # Display progress
             progress_bar((svo_position + 1) / nb_frames * 100, 30)
 
-            if err == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
-                progress_bar(100, 30)
-                logger.info("Reached end of file successfully.")
-                break
+        if err == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
+            progress_bar(100, 30)
+            logger.info("Reached end of file successfully.")
+            break
 
     # Close the video writer
     video_writer.release()
