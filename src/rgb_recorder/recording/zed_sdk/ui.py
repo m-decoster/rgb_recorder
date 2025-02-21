@@ -61,6 +61,7 @@ def start():
     global svo_filenames
 
     should_stop.clear()
+    svo_filenames = []
 
     serial_numbers = serial_numbers_entry.get().split()
     output_dir = output_dir_entry.get()
