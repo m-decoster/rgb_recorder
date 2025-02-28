@@ -46,7 +46,7 @@ def should_stop_fn() -> bool:
 
 
 def create_output_file(output_dir: str, serial_number: str, timestamp: str) -> str:
-    video_name = f"{serial_number}.svo2"
+    video_name = f"{timestamp}_{serial_number}.svo2"
     video_dir = os.path.join(output_dir, timestamp)
     os.makedirs(video_dir, exist_ok=True)
     video_path = os.path.join(video_dir, video_name)
